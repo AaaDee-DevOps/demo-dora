@@ -6,10 +6,21 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send log to Splunk
+      - name: Send GitHub commit event to Splunk Observability
         run: |
-          curl -k https://us0.splunkcloud.com:8088/services/collector \
-          -H "Authorization: Splunk <your-token>" \
+          curl -X POST https://api.us1.signalfx.com/v2/event \
+          -H "X-SF-TOKEN: mOmfiUegLcEESZDHjYpzow" \
           -H "Content-Type: application/json" \
-          -d '{"event": "GitHub commit pushed", "sourcetype": "github", "source": "demo-dora"}'
+          -d '{
+                "eventType": "github.commit",
+                "category": "USER_DEFINED",
+                "dimensions": {
+                  "repository": "${{ github.repository }}",
+                  "pusher": "${{ github.actor }}"
+                },
+                "properties": {
+                  "message": "Commit pushed to GitHub",
+                  "commit_sha": "${{ github.sha }}"
+                }
+              }'
  
