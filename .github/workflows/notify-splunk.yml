@@ -1,26 +1,28 @@
-name: Notify Splunk on Commit
+name: Report Commit to Splunk Observability
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  notify:
+  report-to-splunk:
     runs-on: ubuntu-latest
     steps:
-      - name: Send GitHub commit event to Splunk Observability
+      - name: Send commit info to Splunk Observability
         run: |
-          curl -X POST https://api.us1.signalfx.com/v2/event \
-          -H "X-SF-TOKEN: mOmfiUegLcEESZDHjYpzow" \
-          -H "Content-Type: application/json" \
-          -d '{
-                "eventType": "github.commit",
-                "category": "USER_DEFINED",
-                "dimensions": {
-                  "repository": "${{ github.repository }}",
-                  "pusher": "${{ github.actor }}"
-                },
-                "properties": {
-                  "message": "Commit pushed to GitHub",
-                  "commit_sha": "${{ github.sha }}"
-                }
-              }'
- 
+          curl -X POST "https://api.us1.signalfx.com/v2/event" \
+            -H "Content-Type: application/json" \
+            -H "X-SF-TOKEN: ${{ secrets.SPLUNK_TOKEN }}" \
+            -d '{
+              "eventType": "github.commit",
+              "dimensions": {
+                "repo": "${{ github.repository }}",
+                "branch": "${{ github.ref_name }}"
+              },
+              "properties": {
+                "commit_sha": "${{ github.sha }}",
+                "author": "${{ github.actor }}",
+                "message": "${{ github.event.head_commit.message }}"
+              }
+            }'
