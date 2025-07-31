@@ -1,0 +1,13 @@
+name: Notify Splunk on Commit
+ 
+on: [push]
+ 
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send log to Splunk
+        run: |
+          curl -k https:///services/collector \
+          -H "Authorization: Splunk " \
+          -d '{"event": "GitHub commit pushed", "sourcetype": "github", "source": "repo-name"}'
